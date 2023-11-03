@@ -35,8 +35,6 @@ export class OrdersService {
       ).toFixed(2),
     );
 
-    console.log(distanceInKm * tariff.value);
-
     const price = distanceInKm * tariff.value;
 
     const order = this.ordersRepository.create({
@@ -81,21 +79,24 @@ export class OrdersService {
     return orders;
   }
 
+  //#region for driver
+
   async assignOrder(id: number, driver_id: string): Promise<Order> {
     const order = await this.ordersRepository.findOne({
-      where: { id },
+      where: { id, currentStatus: OrderStatusTypes.CREATED, driver: null },
       relations: ['statuses'],
     });
 
     if (!order) {
-      throw new BadRequestException('Order not found');
+      throw new BadRequestException(
+        'Order not found or not available for assign',
+      );
     }
 
-    if (order.currentStatus !== OrderStatusTypes.CREATED) {
-      throw new BadRequestException('Order is not available');
-    }
-
-    await this.ordersRepository.update({ id }, { driver: { id: driver_id } });
+    await this.ordersRepository.update(
+      { id },
+      { driver: { id: driver_id }, currentStatus: OrderStatusTypes.ASSIGNED },
+    );
 
     const orderStatus = this.orderStatusRepository.create({
       type: OrderStatusTypes.ASSIGNED,
@@ -107,8 +108,80 @@ export class OrdersService {
     return { ...order, statuses: [...order.statuses, orderStatus] };
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async pickupOrder(id: number, driver_id: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        id,
+        currentStatus: OrderStatusTypes.ASSIGNED,
+        driver: { id: driver_id },
+      },
+      relations: ['statuses', 'driver'],
+    });
+
+    if (!order) {
+      throw new BadRequestException(
+        'Order not found or not available for pickup',
+      );
+    }
+
+    const orderStatus = this.orderStatusRepository.create({
+      type: OrderStatusTypes.PICKED_UP,
+      order: { id: order.id },
+    });
+    await this.orderStatusRepository.save(orderStatus);
+
+    await this.ordersRepository.update(
+      { id },
+      { currentStatus: OrderStatusTypes.PICKED_UP },
+    );
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
+  }
+
+  //TODO: add position validation
+  async deliverOrder(id: number, driver_id: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        id,
+        currentStatus: OrderStatusTypes.PICKED_UP || OrderStatusTypes.REJECTED,
+        driver: { id: driver_id },
+      },
+      relations: ['statuses', 'driver'],
+    });
+
+    if (!order) {
+      throw new BadRequestException(
+        'Order not found or not available for deliver',
+      );
+    }
+
+    const orderStatus = this.orderStatusRepository.create({
+      type: OrderStatusTypes.DELIVERED,
+      order: { id: order.id },
+    });
+    await this.orderStatusRepository.save(orderStatus);
+
+    await this.ordersRepository.update(
+      { id },
+      { currentStatus: OrderStatusTypes.DELIVERED },
+    );
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
+  }
+
+  //#endregion
+
+  async createOrderStatus(orderId: number, type: OrderStatusTypes) {
+    const order = await this.findOne(orderId, { relations: ['statuses'] });
+
+    const orderStatus = this.orderStatusRepository.create({
+      type,
+      order: { id: order.id },
+    });
+
+    await this.orderStatusRepository.save(orderStatus);
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
   }
 
   async findOneByIdAndCustomerId(
@@ -140,13 +213,9 @@ export class OrdersService {
     return order;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
-  }
+  // async checkIfIsCompleted(id: number): Promise<boolean> {
+  //   c;
+  // }
 
   //#region
   calculateDistance(

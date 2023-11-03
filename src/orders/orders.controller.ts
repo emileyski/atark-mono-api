@@ -1,16 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
@@ -35,16 +25,25 @@ export class OrdersController {
     return this.ordersService.findAvailableOrders();
   }
 
+  //#region Driver actions
   @Role(Roles.DRIVER)
-  @Post('assign/:orderId')
+  @Post(':orderId/assign')
   assignOrder(@Param('orderId') orderId: number, @UserId() userId: string) {
     return this.ordersService.assignOrder(orderId, userId);
   }
 
-  @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  @Role(Roles.DRIVER)
+  @Post(':orderId/pickup')
+  pickupOrder(@Param('orderId') orderId: number, @UserId() userId: string) {
+    return this.ordersService.pickupOrder(orderId, userId);
   }
+
+  @Role(Roles.DRIVER)
+  @Post(':orderId/deliver')
+  deliverOrder(@Param('orderId') orderId: number, @UserId() userId: string) {
+    return this.ordersService.deliverOrder(orderId, userId);
+  }
+  //#endregion
 
   @Role(Roles.CUSTOMER)
   @Get(':orderId')
@@ -58,15 +57,5 @@ export class OrdersController {
       userId,
       withWaypoints,
     );
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
   }
 }

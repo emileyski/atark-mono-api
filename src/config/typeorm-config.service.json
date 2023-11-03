@@ -1,0 +1,17 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "postgres",
+  "password": "postgres",
+  "database": "your_database",
+  "synchronize": true,
+  "logging": true,
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "subscribers": ["dist/**/*.subscriber{.ts,.js}"],
+  "cli": {
+    "entitiesDir": "src",
+    "subscribersDir": "src"
+  },
+  "name": "default"
+}

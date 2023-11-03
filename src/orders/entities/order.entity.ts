@@ -6,6 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  AfterUpdate,
 } from 'typeorm';
 import { OrderStatus } from './order-status.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
