@@ -22,6 +22,13 @@ export class CreateUserDto {
   @Length(8, 20)
   password: string;
 
+  @ApiProperty({
+    description: 'The birth date of the user',
+    example: '2000-01-01',
+  })
+  @IsString()
+  birthDate: Date;
+
   @ApiProperty({ description: 'The role of the user', example: 'customer' })
   @IsOptional()
   @IsEnum(Roles)

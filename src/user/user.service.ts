@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from 'src/core/enums/roles.enum';
 
 @Injectable()
 export class UserService {
@@ -41,6 +42,13 @@ export class UserService {
     } catch (error) {
       throw new ConflictException('User already exists');
     }
+  }
+
+  async setRole(id: string, role: Roles): Promise<User> {
+    const user = await this.findOne(id);
+    user.role = role;
+    user.token = undefined;
+    return await this.usersRepository.save(user);
   }
 
   async findOne(id: string): Promise<User> {

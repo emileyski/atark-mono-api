@@ -6,6 +6,10 @@ import { UserModule } from './user/user.module';
 import { AccessTokenGuard } from './core/guards/access-token.guard';
 import { IsUUIDGuard } from './core/guards/is-uuid.guard';
 import { ConfigModule } from '@nestjs/config';
+import { DriverModule } from './driver/driver.module';
+import { CustomerModule } from './customer/customer.module';
+import { TariffModule } from './tariff/tariff.module';
+import { WaypointsModule } from './waypoints/waypoints.module';
 
 @Module({
   imports: [
@@ -24,6 +28,10 @@ import { ConfigModule } from '@nestjs/config';
     OrdersModule,
     UserModule,
     AuthModule,
+    DriverModule,
+    CustomerModule,
+    TariffModule,
+    WaypointsModule,
   ],
   providers: [
     {

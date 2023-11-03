@@ -11,10 +11,12 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiForbiddenResponse,
+  ApiHeader,
   ApiNotFoundResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { AccessTokenGuard } from 'src/core/guards/access-token.guard';
 // import { Role } from 'src/core/decorators/role.decorator';
 // import { Roles } from 'src/core/enums/roles.enum';
 
@@ -52,7 +54,6 @@ export class AuthController {
 
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Invalid refresh token' })
-  @Public()
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   @HttpCode(200)
@@ -61,6 +62,20 @@ export class AuthController {
     @User('refreshToken') refreshToken: string,
   ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, refreshToken);
+  }
+
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer token',
+    required: true,
+  })
+  @UseGuards(AccessTokenGuard)
+  @Post('access-token')
+  @HttpCode(200)
+  accessToken(@UserId() user): void {
+    console.log('userId', user);
+    return null;
   }
 
   // @Role(Roles.ADMIN)
