@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
@@ -14,7 +6,6 @@ import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
 import { UserId } from 'src/core/decorators/user-id.decorator';
 import { Public } from 'src/core/decorators/public.decorator';
-import { AccessTokenGuard } from 'src/core/guards/access-token.guard';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -71,9 +62,8 @@ export class OrdersController {
   }
   //#endregion
 
-  //TODO: refactor this
-  @UseGuards(AccessTokenGuard)
-  @Get(':orderId')
+  @Role(Roles.CUSTOMER)
+  @Get(':orderId/as-customer')
   findOne(
     @Param('orderId') orderId: number,
     @UserId() userId: string,
@@ -84,5 +74,11 @@ export class OrdersController {
       userId,
       withWaypoints,
     );
+  }
+
+  @Role(Roles.DRIVER)
+  @Get('current')
+  findCurrentOrder(@UserId() userId: string) {
+    return this.ordersService.findCurrentOrder(userId);
   }
 }

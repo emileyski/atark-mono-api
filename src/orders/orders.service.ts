@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coordinates, Order } from './entities/order.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { OrderStatus } from './entities/order-status.entity';
 import { OrderStatusTypes } from 'src/core/enums/order-status.enum';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
@@ -151,7 +151,31 @@ export class OrdersService {
 
   //#region for driver
 
+  async findCurrentOrder(
+    driver_id: string,
+    throwException = true,
+  ): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        driver: { id: driver_id },
+        currentStatus: Not(OrderStatusTypes.COMPLETED),
+      },
+      relations: ['statuses', 'driver'],
+    });
+
+    if (!order && throwException) {
+      throw new BadRequestException('You have no current order');
+    }
+
+    return order;
+  }
+
   async assignOrder(id: number, driver_id: string): Promise<Order> {
+    const currentOrder = await this.findCurrentOrder(driver_id, false);
+    if (currentOrder) {
+      throw new BadRequestException('You already have an order');
+    }
+
     const order = await this.ordersRepository.findOne({
       where: { id, currentStatus: OrderStatusTypes.CREATED, driver: null },
       relations: ['statuses'],
