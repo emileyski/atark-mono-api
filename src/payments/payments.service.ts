@@ -32,12 +32,8 @@ export class PaymentsService {
       OrderStatusTypes.PAID,
     );
 
-    console.log('orderStatus', orderStatus);
-
     const completedStatus =
       await this.ordersService.checkIfIsCompleted(orderId);
-
-    console.log('completedStatus', completedStatus);
 
     if (completedStatus) {
       return this.ordersService.findOne(orderId, {

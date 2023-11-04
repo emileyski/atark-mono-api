@@ -7,12 +7,15 @@ export class Driver {
   @PrimaryColumn()
   id: string;
 
+  @Column()
+  name: string;
+
   @Column({ default: new Date() })
   createdAt: Date;
 
   @Column()
   driverLicense: string;
 
-  @OneToMany((type) => Order, (order) => order.driver)
+  @OneToMany((type) => Order, (order) => order.driver, { onDelete: 'CASCADE' })
   orders: Order[];
 }

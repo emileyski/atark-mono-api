@@ -16,7 +16,10 @@ export class DriverService {
   ) {}
 
   async create(createDriverDto: CreateDriverDto, userId: string) {
+    const user = await this.userService.findOne(userId);
+
     const driver = this.driverRepository.create({
+      name: user.name,
       ...createDriverDto,
       id: userId,
     });
@@ -27,18 +30,10 @@ export class DriverService {
   }
 
   findAll() {
-    return `This action returns all driver`;
+    return this.driverRepository.find();
   }
 
   findOne(id: number) {
     return `This action returns a #${id} driver`;
-  }
-
-  update(id: number, updateDriverDto: UpdateDriverDto) {
-    return `This action updates a #${id} driver`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} driver`;
   }
 }

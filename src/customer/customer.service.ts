@@ -16,7 +16,12 @@ export class CustomerService {
   ) {}
 
   async create(userId: string): Promise<Customer> {
-    const customer = this.customerRepository.create({ id: userId });
+    const user = await this.userService.findOne(userId);
+
+    const customer = this.customerRepository.create({
+      id: userId,
+      name: user.name,
+    });
 
     await this.customerRepository.save(customer);
     await this.userService.setRole(userId, Roles.CUSTOMER);

@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coordinates, Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -117,6 +116,37 @@ export class OrdersService {
       .getMany();
 
     return orders;
+  }
+
+  async cancelOrder(id: number, customer_id: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        id,
+        customer: { id: customer_id },
+        currentStatus: OrderStatusTypes.CREATED,
+      },
+      relations: ['statuses'],
+    });
+
+    if (!order) {
+      throw new BadRequestException(
+        'Order not found or not available for cancel',
+      );
+    }
+
+    const orderStatus = this.orderStatusRepository.create({
+      type: OrderStatusTypes.CANCELLED,
+      order: { id: order.id },
+    });
+
+    await this.orderStatusRepository.save(orderStatus);
+
+    await this.ordersRepository.update(
+      { id },
+      { currentStatus: OrderStatusTypes.CANCELLED },
+    );
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
   }
 
   //#region for driver

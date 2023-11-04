@@ -10,6 +10,11 @@ export class Customer {
   @Column({ default: new Date() })
   createdAt: Date;
 
-  @OneToMany((type) => Order, (order) => order.customer)
+  @Column()
+  name: string;
+
+  @OneToMany((type) => Order, (order) => order.customer, {
+    onDelete: 'CASCADE',
+  })
   orders: Order[];
 }

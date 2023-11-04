@@ -40,11 +40,15 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   volume: number;
 
-  @ManyToOne((type) => Customer, (customer) => customer.orders)
+  @ManyToOne((type) => Customer, (customer) => customer.orders, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
-  @ManyToOne((type) => Driver, (driver) => driver.orders)
+  @ManyToOne((type) => Driver, (driver) => driver.orders, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'driver_id' })
   driver: Driver;
 
