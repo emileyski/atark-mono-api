@@ -19,6 +19,20 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, userId);
   }
 
+  // @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  // @Role(Roles.CUSTOMER)
+  // @Post(':orderId/cancel')
+
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @Role(Roles.CUSTOMER)
+  @Post(':orderId/confirm-delivery')
+  confirmOrderDelivery(
+    @Param('orderId') orderId: number,
+    @UserId() userId: string,
+  ) {
+    return this.ordersService.confirmOrderDelivery(orderId, userId);
+  }
+
   @Public()
   @Get('available')
   findAvailableOrders() {

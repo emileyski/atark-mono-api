@@ -56,6 +56,46 @@ export class OrdersService {
     return { ...order, statuses: [orderStatus] };
   }
 
+  async confirmOrderDelivery(id: number, customer_id: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        id,
+        customer: { id: customer_id },
+        currentStatus: OrderStatusTypes.DELIVERED,
+      },
+      relations: ['statuses'],
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const orderStatus = this.orderStatusRepository.create({
+      type: OrderStatusTypes.CONFIRMED,
+      order: { id: order.id },
+    });
+    await this.orderStatusRepository.save(orderStatus);
+
+    await this.ordersRepository.update(
+      { id },
+      { currentStatus: OrderStatusTypes.CONFIRMED },
+    );
+
+    const completedStatus: OrderStatus | null =
+      await this.checkIfIsCompleted(id);
+
+    if (completedStatus) {
+      order.currentStatus = OrderStatusTypes.COMPLETED;
+
+      return {
+        ...order,
+        statuses: [...order.statuses, orderStatus, completedStatus],
+      };
+    }
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
+  }
+
   async findAvailableOrders(): Promise<Order[]> {
     const orders = await this.ordersRepository
       .createQueryBuilder('order')
@@ -213,9 +253,36 @@ export class OrdersService {
     return order;
   }
 
-  // async checkIfIsCompleted(id: number): Promise<boolean> {
-  //   c;
-  // }
+  async checkIfIsCompleted(id: number): Promise<OrderStatus | null> {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['statuses'],
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const orderStatuses = order.statuses.map((status) => status.type);
+    const isCompleted =
+      orderStatuses.includes(OrderStatusTypes.CONFIRMED) &&
+      orderStatuses.includes(OrderStatusTypes.PAID);
+
+    if (isCompleted) {
+      const newOrder = await this.createOrderStatus(
+        id,
+        OrderStatusTypes.COMPLETED,
+      );
+      await this.ordersRepository.update(
+        { id },
+        { currentStatus: OrderStatusTypes.COMPLETED },
+      );
+
+      return newOrder.statuses[newOrder.statuses.length - 1];
+    }
+
+    return null;
+  }
 
   //#region
   calculateDistance(

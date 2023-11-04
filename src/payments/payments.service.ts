@@ -17,7 +17,7 @@ export class PaymentsService {
 
   async createPayment(orderId: number, userId: string) {
     const order = await this.ordersService.findOne(orderId, {
-      relations: ['customer'],
+      relations: ['customer', 'statuses'],
     });
 
     if (!order) {
@@ -27,9 +27,24 @@ export class PaymentsService {
       throw new ForbiddenException('You are not allowed to pay for this order');
     }
 
-    return await this.ordersService.createOrderStatus(
+    const orderStatus = await this.ordersService.createOrderStatus(
       orderId,
       OrderStatusTypes.PAID,
     );
+
+    console.log('orderStatus', orderStatus);
+
+    const completedStatus =
+      await this.ordersService.checkIfIsCompleted(orderId);
+
+    console.log('completedStatus', completedStatus);
+
+    if (completedStatus) {
+      return this.ordersService.findOne(orderId, {
+        relations: ['customer', 'statuses'],
+      });
+    }
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
   }
 }
