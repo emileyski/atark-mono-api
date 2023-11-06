@@ -42,6 +42,21 @@ export class OrdersController {
     return this.ordersService.findAvailableOrders();
   }
 
+  @Public()
+  @Get('estimated-price')
+  estimatePrice(
+    @Query('distance') distance: number,
+    @Query('tariffId') tariffId: number,
+  ) {
+    return this.ordersService.estimatePrice(distance, tariffId);
+  }
+
+  @Role(Roles.CUSTOMER)
+  @Post(':orderId/reject')
+  rejectOrder(@Param('orderId') orderId: number, @UserId() userId: string) {
+    return this.ordersService.rejectOrderDelivery(orderId, userId);
+  }
+
   //#region Driver actions
   @Role(Roles.DRIVER)
   @Post(':orderId/assign')
@@ -61,6 +76,18 @@ export class OrdersController {
     return this.ordersService.deliverOrder(orderId, userId);
   }
   //#endregion
+
+  @Role(Roles.CUSTOMER)
+  @Get('as-customer')
+  findAllAsCustomer(@UserId() userId: string) {
+    return this.ordersService.findAllAsCustomer(userId);
+  }
+
+  @Role(Roles.DRIVER)
+  @Get('as-driver')
+  findAllAsDriver(@UserId() userId: string) {
+    return this.ordersService.findAllAsDriver(userId);
+  }
 
   @Role(Roles.CUSTOMER)
   @Get(':orderId/as-customer')

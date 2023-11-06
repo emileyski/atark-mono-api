@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coordinates, Order } from './entities/order.entity';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { OrderStatus } from './entities/order-status.entity';
 import { OrderStatusTypes } from 'src/core/enums/order-status.enum';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
@@ -55,6 +55,31 @@ export class OrdersService {
     return { ...order, statuses: [orderStatus] };
   }
 
+  async rejectOrderDelivery(id: number, customer_id: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        id,
+        customer: { id: customer_id },
+        currentStatus: OrderStatusTypes.DELIVERED,
+      },
+      relations: ['statuses'],
+    });
+
+    const orderStatus = this.orderStatusRepository.create({
+      type: OrderStatusTypes.REJECTED,
+      order: { id: order.id },
+    });
+
+    await this.orderStatusRepository.save(orderStatus);
+
+    await this.ordersRepository.update(
+      { id },
+      { currentStatus: OrderStatusTypes.REJECTED },
+    );
+
+    return { ...order, statuses: [...order.statuses, orderStatus] };
+  }
+
   async confirmOrderDelivery(id: number, customer_id: string): Promise<Order> {
     const order = await this.ordersRepository.findOne({
       where: {
@@ -95,10 +120,31 @@ export class OrdersService {
     return { ...order, statuses: [...order.statuses, orderStatus] };
   }
 
+  async findAllAsCustomer(customer_id: string): Promise<Order[]> {
+    const orders = await this.ordersRepository.find({
+      where: { customer: { id: customer_id } },
+      relations: ['statuses'],
+    });
+
+    return orders;
+  }
+
+  async findAllAsDriver(driver_id: string): Promise<Order[]> {
+    const orders = await this.ordersRepository.find({
+      where: {
+        driver: { id: driver_id },
+        // currentStatus: OrderStatusTypes.COMPLETED,
+      },
+      relations: ['statuses'],
+    });
+
+    return orders;
+  }
+
   async findAvailableOrders(): Promise<Order[]> {
     const orders = await this.ordersRepository
       .createQueryBuilder('order')
-
+      .leftJoinAndSelect('order.statuses', 'status') // Join statuses relation
       .where('order.currentStatus = :status', {
         status: OrderStatusTypes.CREATED,
       })
@@ -112,6 +158,12 @@ export class OrdersService {
         'order.price',
         'order.originCoordinates',
         'order.destinationCoordinates',
+        'order.currentStatus',
+      ])
+      .addSelect([
+        'status.id', // Add fields from the statuses relation
+        'status.dateTime',
+        'status.type',
       ])
       .getMany();
 
@@ -237,8 +289,11 @@ export class OrdersService {
     const order = await this.ordersRepository.findOne({
       where: {
         id,
-        currentStatus: OrderStatusTypes.PICKED_UP || OrderStatusTypes.REJECTED,
         driver: { id: driver_id },
+        currentStatus: In([
+          OrderStatusTypes.PICKED_UP,
+          OrderStatusTypes.REJECTED,
+        ]),
       },
       relations: ['statuses', 'driver'],
     });
@@ -339,6 +394,18 @@ export class OrdersService {
   }
 
   //#region
+  async estimatePrice(distance: number, tariffId: number): Promise<number> {
+    const tariff = await this.tariffRepository.findOne({
+      where: { id: tariffId },
+    });
+
+    if (!tariff) {
+      throw new BadRequestException('Tariff not found');
+    }
+
+    return distance * tariff.value;
+  }
+
   calculateDistance(
     originCoordinates: Coordinates,
     destinationCoordinates: Coordinates,

@@ -8,7 +8,6 @@ import {
   Delete,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import {
   ApiForbiddenResponse,
@@ -16,7 +15,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Public } from 'src/core/decorators/public.decorator';
 import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
 import { UserId } from 'src/core/decorators/user-id.decorator';

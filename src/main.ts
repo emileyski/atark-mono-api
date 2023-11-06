@@ -20,6 +20,8 @@ async function bootstrap() {
 
   const PORT = process.env.PORT || 3000;
 
+  app.enableCors({ origin: 'http://localhost:5173' });
+
   await app.listen(PORT);
   Logger.log(`😎 Auth service is running on port ${PORT}`, `bootstrap`);
 }
