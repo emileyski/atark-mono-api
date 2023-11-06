@@ -46,6 +46,7 @@ export class AuthController {
   }
 
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(AccessTokenGuard)
   @Post('log-out')
   @HttpCode(200)
   logOut(@UserId() userId: string): void {

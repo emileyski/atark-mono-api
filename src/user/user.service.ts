@@ -18,6 +18,12 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
+  async getAll(): Promise<User[]> {
+    return await this.usersRepository.find({
+      select: ['id', 'name', 'email', 'role', 'createdAt', 'birthDate'],
+    });
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const hashedPassword = await hash(createUserDto.password);

@@ -12,6 +12,7 @@ import { TariffModule } from './tariff/tariff.module';
 import { WaypointsModule } from './waypoints/waypoints.module';
 import { StripeModule } from 'nestjs-stripe';
 import { PaymentsModule } from './payments/payments.module';
+import { AdminPanelModule } from './admin-panel/admin-panel.module';
 import Stripe from 'stripe';
 
 const apiKey =
@@ -45,6 +46,7 @@ export const getStripeInstance = async (): Promise<Stripe> => {
     TariffModule,
     WaypointsModule,
     PaymentsModule,
+    AdminPanelModule,
   ],
   providers: [
     {
