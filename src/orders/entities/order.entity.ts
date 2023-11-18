@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  AfterUpdate,
+  OneToOne,
 } from 'typeorm';
 import { OrderStatus } from './order-status.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
@@ -14,6 +14,7 @@ import { Driver } from 'src/driver/entities/driver.entity';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
 import { OrderStatusTypes } from 'src/core/enums/order-status.enum';
 import { Waypoint } from 'src/waypoints/entities/waypoint.entity';
+import { Complaint } from 'src/complaint/entities/complaint.entity';
 
 export interface Coordinates {
   latitude: number;
@@ -77,4 +78,7 @@ export class Order {
 
   @Column({ type: 'jsonb', nullable: false })
   destinationCoordinates: Coordinates;
+
+  @OneToMany(() => Complaint, (complaint) => complaint.order)
+  complaints: Complaint[];
 }

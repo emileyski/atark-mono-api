@@ -17,7 +17,7 @@ export class TariffService {
   }
 
   findAll() {
-    return `This action returns all tariff`;
+    return this.tariffRepository.find();
   }
 
   findOne(id: number) {

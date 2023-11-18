@@ -13,6 +13,7 @@ import { UpdateTariffDto } from './dto/update-tariff.dto';
 import { ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @ApiTags('tariff')
 @Controller('tariff')
@@ -26,6 +27,7 @@ export class TariffController {
     return this.tariffService.create(createTariffDto);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.tariffService.findAll();

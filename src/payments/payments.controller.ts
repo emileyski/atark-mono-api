@@ -8,9 +8,9 @@ import { UserId } from 'src/core/decorators/user-id.decorator';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Role(Roles.CUSTOMER)
-  @Post(':orderId')
-  createPayment(@Param('orderId') orderId: number, @UserId() userId: string) {
-    return this.paymentsService.createPayment(orderId, userId);
-  }
+  // @Role(Roles.CUSTOMER)
+  // @Post(':orderId')
+  // createPayment(@Param('orderId') orderId: number, @UserId() userId: string) {
+  //   return this.paymentsService.createPayment(orderId, userId);
+  // }
 }

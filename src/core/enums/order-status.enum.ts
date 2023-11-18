@@ -10,6 +10,6 @@ export enum OrderStatusTypes {
   COMPLETED = 'COMPLETED',
   //#region not used
   ARCHIVED = 'ARCHIVED',
-  REPORTED = 'REPORTED',
+  COMPLAINED = 'COMPLAINED',
   //#endregion
 }

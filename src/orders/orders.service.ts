@@ -6,6 +6,10 @@ import { In, Not, Repository } from 'typeorm';
 import { OrderStatus } from './entities/order-status.entity';
 import { OrderStatusTypes } from 'src/core/enums/order-status.enum';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
+import { ComplainantsTypes } from 'src/core/enums/complainants-types.enum';
+import { CreateComplaintDto } from 'src/complaint/dto/create-complaint.dto';
+import { Complaint } from 'src/complaint/entities/complaint.entity';
+import { JwtPayload } from 'src/core/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class OrdersService {
@@ -16,6 +20,8 @@ export class OrdersService {
     private readonly orderStatusRepository: Repository<OrderStatus>,
     @InjectRepository(Tariff)
     private readonly tariffRepository: Repository<Tariff>,
+    @InjectRepository(Complaint)
+    private readonly complaintRepository: Repository<Complaint>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, userId: string): Promise<Order> {
@@ -78,6 +84,40 @@ export class OrdersService {
     );
 
     return { ...order, statuses: [...order.statuses, orderStatus] };
+  }
+
+  async complainOrder(
+    id: number,
+    user: JwtPayload,
+    createComplaintDto: CreateComplaintDto,
+  ) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      // relations: ['customer', 'driver'],
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const complainant =
+      user.role === 'customer'
+        ? ComplainantsTypes.CUSTOMER
+        : ComplainantsTypes.DRIVER;
+
+    const complaint = this.complaintRepository.create({
+      ...createComplaintDto,
+      complainant,
+      order: { id: order.id },
+    });
+
+    console.log(complaint);
+
+    await this.complaintRepository.save(complaint);
+
+    await this.createOrderStatus(id, OrderStatusTypes.COMPLAINED);
+
+    return complaint;
   }
 
   async confirmOrderDelivery(id: number, customer_id: string): Promise<Order> {

@@ -10,22 +10,24 @@ import { DriverModule } from './driver/driver.module';
 import { CustomerModule } from './customer/customer.module';
 import { TariffModule } from './tariff/tariff.module';
 import { WaypointsModule } from './waypoints/waypoints.module';
-import { StripeModule } from 'nestjs-stripe';
+// import { StripeModule } from 'nestjs-stripe';
 import { PaymentsModule } from './payments/payments.module';
 import { AdminPanelModule } from './admin-panel/admin-panel.module';
+import { ChatModule } from './chat/chat.module';
+import { ComplaintModule } from './complaint/complaint.module';
 import Stripe from 'stripe';
 
 const apiKey =
   'sk_test_51NIqpvG7sSsfaKMscC85DRYNmkQmH5aJGoFFsKbQvdhec8VN03yypn1QRcy0diFTz9r4yJoHaIhBp4lvmCXCmkSC00PJvazFHo'; //TODO: move to env
 const apiVersion = '2023-10-16'; //TODO: move to env
 
-export const getStripeInstance = async (): Promise<Stripe> => {
-  return await loadStripe(apiKey, { apiVersion });
-};
+// export const getStripeInstance = async (): Promise<Stripe> => {
+//   return await loadStripe(apiKey, { apiVersion });
+// };
 
 @Module({
   imports: [
-    StripeModule.forRoot({ apiKey, apiVersion }),
+    // StripeModule.forRoot({ apiKey, apiVersion }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -47,6 +49,8 @@ export const getStripeInstance = async (): Promise<Stripe> => {
     WaypointsModule,
     PaymentsModule,
     AdminPanelModule,
+    ChatModule,
+    ComplaintModule,
   ],
   providers: [
     {
@@ -60,9 +64,9 @@ export const getStripeInstance = async (): Promise<Stripe> => {
   ],
 })
 export class AppModule {}
-function loadStripe(
-  apiKey: any,
-  arg1: { apiVersion: any },
-): Stripe | PromiseLike<Stripe> {
-  throw new Error('Function not implemented.');
-}
+// function loadStripe(
+//   apiKey: any,
+//   arg1: { apiVersion: any },
+// ): Stripe | PromiseLike<Stripe> {
+//   throw new Error('Function not implemented.');
+// }
