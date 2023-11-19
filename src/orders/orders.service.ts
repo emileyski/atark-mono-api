@@ -6,10 +6,9 @@ import { In, Not, Repository } from 'typeorm';
 import { OrderStatus } from './entities/order-status.entity';
 import { OrderStatusTypes } from 'src/core/enums/order-status.enum';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
-import { ComplainantsTypes } from 'src/core/enums/complainants-types.enum';
 import { CreateComplaintDto } from 'src/complaint/dto/create-complaint.dto';
-import { Complaint } from 'src/complaint/entities/complaint.entity';
 import { JwtPayload } from 'src/core/interfaces/jwt-payload.interface';
+import { ComplaintService } from 'src/complaint/complaint.service';
 
 @Injectable()
 export class OrdersService {
@@ -20,8 +19,7 @@ export class OrdersService {
     private readonly orderStatusRepository: Repository<OrderStatus>,
     @InjectRepository(Tariff)
     private readonly tariffRepository: Repository<Tariff>,
-    @InjectRepository(Complaint)
-    private readonly complaintRepository: Repository<Complaint>,
+    private readonly complaintService: ComplaintService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto, userId: string): Promise<Order> {
@@ -93,29 +91,27 @@ export class OrdersService {
   ) {
     const order = await this.ordersRepository.findOne({
       where: { id },
-      // relations: ['customer', 'driver'],
+      relations: ['driver'],
     });
 
     if (!order) {
       throw new BadRequestException('Order not found');
     }
 
-    const complainant =
-      user.role === 'customer'
-        ? ComplainantsTypes.CUSTOMER
-        : ComplainantsTypes.DRIVER;
+    if (!order.driver) {
+      throw new BadRequestException('Order is not assigned to driver');
+    }
 
-    const complaint = this.complaintRepository.create({
-      ...createComplaintDto,
-      complainant,
-      order: { id: order.id },
-    });
-
-    console.log(complaint);
-
-    await this.complaintRepository.save(complaint);
+    const complaint = this.complaintService.create(
+      id,
+      createComplaintDto,
+      user,
+    );
 
     await this.createOrderStatus(id, OrderStatusTypes.COMPLAINED);
+    order.currentStatus = OrderStatusTypes.COMPLAINED;
+
+    await this.ordersRepository.save(order);
 
     return complaint;
   }

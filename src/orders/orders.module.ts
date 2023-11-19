@@ -6,10 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { OrderStatus } from './entities/order-status.entity';
 import { Tariff } from 'src/tariff/entities/tariff.entity';
-import { Complaint } from 'src/complaint/entities/complaint.entity';
+import { ComplaintModule } from 'src/complaint/complaint.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderStatus, Tariff, Complaint])],
+  imports: [
+    TypeOrmModule.forFeature([Order, OrderStatus, Tariff]),
+    ComplaintModule,
+  ],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],
