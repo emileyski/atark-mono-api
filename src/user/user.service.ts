@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from 'src/core/enums/roles.enum';
+import { StrategyTypes } from 'src/core/enums/strategy.enum';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,22 @@ export class UserService {
     return await this.usersRepository.find({
       select: ['id', 'name', 'email', 'role', 'createdAt', 'birthDate'],
     });
+  }
+
+  async signupWithGoogle(user: any): Promise<User> {
+    const { name, email } = user;
+    const userExists = await this.usersRepository.findOneBy({ email });
+    if (userExists) {
+      throw new ConflictException('User with this email is already exists');
+    }
+
+    const newUser = this.usersRepository.create({
+      name,
+      email,
+      strategy: StrategyTypes.GOOGLE,
+    });
+
+    return await this.usersRepository.save(newUser);
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {

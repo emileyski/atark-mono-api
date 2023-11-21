@@ -429,6 +429,16 @@ export class OrdersService {
     return null;
   }
 
+  async changeOrderStatus(id: number, type: OrderStatusTypes) {
+    const order = await this.findOne(id, { relations: ['statuses'] });
+
+    order.currentStatus = type;
+
+    await this.ordersRepository.save(order);
+
+    return order;
+  }
+
   //#region
   async estimatePrice(distance: number, tariffId: number): Promise<number> {
     const tariff = await this.tariffRepository.findOne({

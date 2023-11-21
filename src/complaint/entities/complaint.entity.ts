@@ -34,4 +34,7 @@ export class Complaint {
     default: ComplainantsTypes.CUSTOMER,
   })
   complainant: ComplainantsTypes;
+
+  @Column({ nullable: true })
+  verdict?: string;
 }

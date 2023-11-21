@@ -18,6 +18,21 @@ export class AuthService {
     private readonly usersService: UserService,
   ) {}
 
+  async googleLogin(user: any): Promise<Tokens> {
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const { id, role } = await this.usersService.signupWithGoogle(user);
+
+    const { accessToken, refreshToken } = await this.generateTokens({
+      id,
+      role,
+    });
+
+    return { accessToken, refreshToken };
+  }
+
   async signUp(signUpDto: SignUpDto): Promise<Tokens> {
     const { id, role } = await this.usersService.create(signUpDto);
     const { accessToken, refreshToken } = await this.generateTokens({

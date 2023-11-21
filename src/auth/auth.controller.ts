@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { Tokens } from 'src/core/interfaces/tokens.interface';
@@ -17,6 +24,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AccessTokenGuard } from 'src/core/guards/access-token.guard';
+import { GoogleOAuthGuard } from 'src/core/guards/google-oauth.guard';
 // import { Role } from 'src/core/decorators/role.decorator';
 // import { Roles } from 'src/core/enums/roles.enum';
 
@@ -24,6 +32,18 @@ import { AccessTokenGuard } from 'src/core/guards/access-token.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth() {}
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  googleAuthRedirect(@User() user: any) {
+    return this.authService.googleLogin(user);
+  }
 
   @ApiBadRequestResponse({
     description:

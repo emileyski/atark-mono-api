@@ -15,11 +15,12 @@ import { PaymentsModule } from './payments/payments.module';
 import { AdminPanelModule } from './admin-panel/admin-panel.module';
 import { ChatModule } from './chat/chat.module';
 import { ComplaintModule } from './complaint/complaint.module';
-import Stripe from 'stripe';
+import authConfig from './config/auth.config';
+// import Stripe from 'stripe';
 
-const apiKey =
-  'sk_test_51NIqpvG7sSsfaKMscC85DRYNmkQmH5aJGoFFsKbQvdhec8VN03yypn1QRcy0diFTz9r4yJoHaIhBp4lvmCXCmkSC00PJvazFHo'; //TODO: move to env
-const apiVersion = '2023-10-16'; //TODO: move to env
+// const apiKey =
+//   'sk_test_51NIqpvG7sSsfaKMscC85DRYNmkQmH5aJGoFFsKbQvdhec8VN03yypn1QRcy0diFTz9r4yJoHaIhBp4lvmCXCmkSC00PJvazFHo'; //TODO: move to env
+// const apiVersion = '2023-10-16'; //TODO: move to env
 
 // export const getStripeInstance = async (): Promise<Stripe> => {
 //   return await loadStripe(apiKey, { apiVersion });
@@ -28,7 +29,7 @@ const apiVersion = '2023-10-16'; //TODO: move to env
 @Module({
   imports: [
     // StripeModule.forRoot({ apiKey, apiVersion }),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true, load: [authConfig] }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
