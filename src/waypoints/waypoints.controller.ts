@@ -29,27 +29,4 @@ export class WaypointsController {
   ) {
     return this.waypointsService.create(createWaypointDto, orderId, userId);
   }
-
-  @Get()
-  findAll() {
-    return this.waypointsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.waypointsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateWaypointDto: UpdateWaypointDto,
-  ) {
-    return this.waypointsService.update(+id, updateWaypointDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.waypointsService.remove(+id);
-  }
 }

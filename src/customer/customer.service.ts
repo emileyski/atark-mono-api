@@ -29,19 +29,29 @@ export class CustomerService {
     return customer;
   }
 
-  findAll() {
-    return `This action returns all customer`;
-  }
+  async findAll(
+    page = 1,
+    perPage = 10,
+  ): Promise<{
+    data: Customer[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
+    const [customers, total] = await this.customerRepository.findAndCount({
+      skip: (page - 1) * perPage,
+      take: perPage,
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} customer`;
-  }
+    const totalPages = Math.ceil(total / perPage);
 
-  update(id: number, updateCustomerDto: UpdateCustomerDto) {
-    return `This action updates a #${id} customer`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} customer`;
+    return {
+      data: customers,
+      total,
+      page: +page,
+      perPage: +perPage,
+      totalPages: +totalPages,
+    };
   }
 }

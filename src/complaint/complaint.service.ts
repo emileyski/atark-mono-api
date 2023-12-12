@@ -7,6 +7,7 @@ import { Complaint } from './entities/complaint.entity';
 import { Repository } from 'typeorm';
 import { ComplainantsTypes } from 'src/core/enums/complainants-types.enum';
 import { ComplaintStatusTypes } from 'src/core/enums/complaint-status.enum';
+import { MakeVerdictDto } from './dto/make-verdict.dto';
 
 @Injectable()
 export class ComplaintService {
@@ -36,8 +37,18 @@ export class ComplaintService {
     return complaint;
   }
 
-  findAll() {
+  findAllMyComplaints(userId: string) {
     return this.complaintRepository.find({
+      where: [
+        {
+          order: { customer: { id: userId } },
+          complainant: ComplainantsTypes.CUSTOMER,
+        },
+        {
+          order: { driver: { id: userId } },
+          complainant: ComplainantsTypes.DRIVER,
+        },
+      ],
       relations: ['order', 'order.customer', 'order.driver'],
     });
   }
@@ -49,7 +60,8 @@ export class ComplaintService {
     });
   }
 
-  async makeVerdict(id: string, verdict: string, status) {
+  async makeVerdict(makeVerdictDto: MakeVerdictDto) {
+    const { id, verdict, status } = makeVerdictDto;
     const complaint = await this.complaintRepository.findOne({
       where: { id },
       relations: ['order', 'order.customer', 'order.driver'],
@@ -85,6 +97,12 @@ export class ComplaintService {
 
   update(id: number, updateComplaintDto: UpdateComplaintDto) {
     return `This action updates a #${id} complaint`;
+  }
+
+  findAll() {
+    return this.complaintRepository.find({
+      relations: ['order', 'order.customer', 'order.driver'],
+    });
   }
 
   remove(id: number) {

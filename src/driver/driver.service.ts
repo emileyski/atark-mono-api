@@ -29,8 +29,30 @@ export class DriverService {
     return this.driverRepository.save(driver);
   }
 
-  findAll() {
-    return this.driverRepository.find();
+  async findAll(
+    page = 1,
+    perPage = 10,
+  ): Promise<{
+    data: Driver[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
+    const [drivers, total] = await this.driverRepository.findAndCount({
+      skip: (page - 1) * perPage,
+      take: perPage,
+    });
+
+    const totalPages = Math.ceil(total / perPage);
+
+    return {
+      data: drivers,
+      total,
+      page: +page,
+      perPage: +perPage,
+      totalPages: +totalPages,
+    };
   }
 
   findOne(id: number) {

@@ -42,20 +42,4 @@ export class WaypointsService {
 
     return this.waypointsRepository.save(waypoint);
   }
-
-  findAll() {
-    return `This action returns all waypoints`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} waypoint`;
-  }
-
-  update(id: number, updateWaypointDto: UpdateWaypointDto) {
-    return `This action updates a #${id} waypoint`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} waypoint`;
-  }
 }
