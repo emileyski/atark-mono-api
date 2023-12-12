@@ -1,26 +1,158 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Chat } from './entities/chat.entity';
+import { Repository } from 'typeorm';
+import { ChatMember } from './entities/chat-member.entity';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class ChatService {
-  create(createChatDto: CreateChatDto) {
-    return 'This action adds a new chat';
+  constructor(
+    @InjectRepository(Chat)
+    private chatsRepository: Repository<Chat>,
+    @InjectRepository(ChatMember)
+    private chatMembersRepository: Repository<ChatMember>,
+    private usersService: UserService,
+  ) {}
+  async create(userId: string, createChatDto: CreateChatDto) {
+    const interlocutor = await this.usersService.findOne(
+      createChatDto.interlocutorId,
+    );
+
+    if (!interlocutor) {
+      throw new NotFoundException('Interlocutor not found');
+    }
+
+    const chat = this.chatsRepository.create({
+      chatMembers: [
+        {
+          user: { id: createChatDto.interlocutorId },
+        },
+        {
+          user: { id: userId },
+        },
+      ],
+    });
+
+    await this.chatsRepository.save(chat);
+    await this.chatMembersRepository.save(
+      chat.chatMembers.map((cm) => ({ ...cm, chat: { id: chat.id } })),
+    );
+
+    return chat;
   }
 
-  findAll() {
-    return `This action returns all chat`;
+  async findAll(userId: string) {
+    // Найти все чаты, в которых участвует пользователь
+    const userChats = await this.chatMembersRepository.find({
+      where: { user: { id: userId } },
+      relations: ['chat', 'chat.chatMembers', 'chat.chatMembers.user'],
+    });
+
+    // Извлечь уникальные чаты из результата (если это необходимо)
+    const uniqueChats = Array.from(
+      new Set(userChats.map((chatMember) => chatMember.chat)),
+    );
+
+    // Получить всех участников этих чатов без дублирования
+    const chatMembersWithUsers = uniqueChats.map((chat) => {
+      const uniqueMembers = Array.from(
+        new Set(chat.chatMembers.map((member) => member.user)),
+      );
+
+      return {
+        chat: {
+          id: chat.id,
+          name: chat.name,
+          createdAt: chat.createdAt,
+        },
+        members: uniqueMembers.map((user) => ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          birthDate: user.birthDate,
+          createdAt: user.createdAt,
+          strategy: user.strategy,
+        })),
+      };
+    });
+
+    return chatMembersWithUsers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chat`;
+  //TODO: отрефакторить этот код
+  async findOne(id: string, userId: string) {
+    const chat = await this.chatsRepository.findOne({
+      where: { id },
+      relations: [
+        'chatMembers',
+        'chatMembers.user',
+        'messages',
+        'messages.user',
+      ],
+    });
+
+    if (
+      !chat ||
+      !chat.chatMembers.some((member) => member.user.id === userId)
+    ) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    return {
+      ...chat,
+      chatMembers: chat.chatMembers.map((member) => {
+        const chatMember = {
+          ...member,
+          user: {
+            ...this.clearUserData(member.user),
+          },
+        };
+
+        return chatMember;
+      }),
+      messages: chat.messages.map((message) => {
+        const chatMember = {
+          ...message,
+          user: {
+            ...this.clearUserData(message.user),
+          },
+        };
+
+        return chatMember;
+      }),
+    };
   }
 
-  update(id: number, updateChatDto: UpdateChatDto) {
-    return `This action updates a #${id} chat`;
+  async remove(id: string, userId: string) {
+    const chat = await this.chatsRepository.findOne({
+      where: { id },
+      relations: ['chatMembers', 'chatMembers.user'],
+    });
+
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    if (!chat.chatMembers.some((member) => member.user.id === userId)) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    await this.chatsRepository.remove(chat);
+
+    return { message: `Chat #${id} was deleted` };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chat`;
+  clearUserData(user: User) {
+    delete user.token;
+    delete user.password;
+    delete user.role;
+    delete user.strategy;
+    delete user.createdAt;
+    delete user.birthDate;
+
+    return user;
   }
 }

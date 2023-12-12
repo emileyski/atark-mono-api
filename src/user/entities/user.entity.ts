@@ -1,6 +1,14 @@
+import { ChatMember } from 'src/chat/entities/chat-member.entity';
 import { Roles } from 'src/core/enums/roles.enum';
 import { StrategyTypes } from 'src/core/enums/strategy.enum';
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Message } from 'src/message/entities/message.entity';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -32,4 +40,12 @@ export class User {
   @Index('IDX_TOKEN')
   @Column({ nullable: true })
   token?: string;
+
+  @OneToMany(() => ChatMember, (chatMember) => chatMember.user, {
+    onDelete: 'CASCADE',
+  })
+  chatMemberships: ChatMember[];
+
+  @OneToMany(() => Message, (message) => message.user, { onDelete: 'CASCADE' })
+  messages: Message[];
 }
