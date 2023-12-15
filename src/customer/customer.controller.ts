@@ -27,11 +27,6 @@ export class CustomerController {
 
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true,
-  })
   @Role(Roles.USER)
   @Post()
   create(@UserId() userId: string) {

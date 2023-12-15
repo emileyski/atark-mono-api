@@ -13,6 +13,5 @@ export class SignInDto {
 
   @ApiProperty({ description: 'The password of the user', example: 'password' })
   @IsString()
-  @Length(6, 20)
   readonly password: string;
 }

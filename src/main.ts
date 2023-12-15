@@ -10,14 +10,16 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const options = new DocumentBuilder()
-    .setTitle('Atark API')
-    .setDescription('This is backend for Atark project')
+    .setTitle('Auth Service')
+    .setDescription('Auth Service API')
     .setVersion('1.0')
     .addTag('auth')
     .addBearerAuth({
       type: 'http',
-      scheme: 'bearer',
-      description: 'Enter JWT token like [Bearer <token>]',
+      scheme: 'Bearer',
+      bearerFormat: 'Bearer ${token}',
+      in: 'header',
+      name: 'Authorization',
     })
     .build();
 
@@ -30,6 +32,6 @@ async function bootstrap() {
   app.enableCors({ origin: 'http://localhost:5173' });
 
   await app.listen(PORT);
-  Logger.log(`😎 Auth service is running on port ${PORT}`, `bootstrap`);
+  Logger.log(`😎 Auth service is running on port ${PORT}`, 'bootstrap');
 }
 bootstrap();
