@@ -1,17 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
+
   app.setGlobalPrefix('api');
 
   const options = new DocumentBuilder()
-    .setTitle('Auth Service')
-    .setDescription('Auth Service API')
+    .setTitle('Atark API')
+    .setDescription('This is backend for Atark project')
     .setVersion('1.0')
     .addTag('auth')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      description: 'Enter JWT token like [Bearer <token>]',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

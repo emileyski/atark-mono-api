@@ -398,6 +398,7 @@ export class OrdersService {
     return order;
   }
 
+  //метод для проверки, что заказ завершен
   async checkIfIsCompleted(id: number): Promise<OrderStatus | null> {
     const order = await this.ordersRepository.findOne({
       where: { id },

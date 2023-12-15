@@ -4,7 +4,6 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { CreateWaypointDto } from './dto/create-waypoint.dto';
-import { UpdateWaypointDto } from './dto/update-waypoint.dto';
 import { Waypoint } from './entities/waypoint.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

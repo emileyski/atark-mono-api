@@ -30,6 +30,13 @@ export class AdminPanelController {
 
   @UseGuards(RoleGuard)
   @Role(Roles.ADMIN)
+  @Post('users')
+  async createUser(@Body() createUserDto) {
+    return await this.userService.create(createUserDto);
+  }
+
+  @UseGuards(RoleGuard)
+  @Role(Roles.ADMIN)
   @Get('users')
   async getAllUsers(@Query('page') page = 1, @Query('perPage') perPage = 10) {
     return await this.adminPanelService.getAllUsers(page, perPage);
@@ -105,6 +112,14 @@ export class AdminPanelController {
   @Delete('tariffs/:tariffId')
   async deleteTariff(@Param('tariffId') id: number) {
     return await this.adminPanelService.deleteTariff(id);
+  }
+
+  @UseGuards(RoleGuard)
+  @Role(Roles.ADMIN)
+  @Post('complaints')
+  createComplaint(@Body() createComplaintDto) {
+    // return this.adminPanelService.createComplaint(createComplaintDto);
+    return;
   }
 
   @UseGuards(RoleGuard)
