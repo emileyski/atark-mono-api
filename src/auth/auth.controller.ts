@@ -16,6 +16,7 @@ import { RefreshTokenGuard } from 'src/core/guards/refresh-token.guard';
 import { User } from 'src/core/decorators/user.decorator';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiForbiddenResponse,
   ApiHeader,
@@ -67,6 +68,7 @@ export class AuthController {
 
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth()
   @Post('log-out')
   @HttpCode(200)
   logOut(@UserId() userId: string): void {
@@ -77,6 +79,7 @@ export class AuthController {
   @ApiForbiddenResponse({ description: 'Invalid refresh token' })
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
+  @ApiBearerAuth()
   @HttpCode(200)
   refresh(
     @UserId() userId: string,
@@ -84,24 +87,4 @@ export class AuthController {
   ): Promise<Tokens> {
     return this.authService.refreshTokens(userId, refreshToken);
   }
-
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer token',
-    required: true,
-  })
-  @UseGuards(AccessTokenGuard)
-  @Post('access-token')
-  @HttpCode(200)
-  accessToken(@UserId() user): void {
-    console.log('userId', user);
-    return null;
-  }
-
-  // @Role(Roles.ADMIN)
-  // @Post('admin')
-  // admin(): string {
-  //   return 'Admin';
-  // }
 }

@@ -105,7 +105,29 @@ export class ComplaintService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} complaint`;
+  async remove(id: string, userId: string) {
+    const complaint = await this.complaintRepository.findOne({
+      where: [
+        {
+          id,
+          order: { customer: { id: userId } },
+          complainant: ComplainantsTypes.CUSTOMER,
+        },
+        {
+          id,
+          order: { driver: { id: userId } },
+          complainant: ComplainantsTypes.DRIVER,
+        },
+      ],
+      relations: ['order', 'order.customer', 'order.driver'],
+    });
+
+    if (!complaint) {
+      throw new Error('Complaint not found or you are not the owner');
+    }
+
+    await this.complaintRepository.remove(complaint);
+
+    return { message: `Complaint #${id} removed` };
   }
 }

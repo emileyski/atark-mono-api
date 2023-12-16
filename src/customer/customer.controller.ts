@@ -1,18 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
 import {
+  ApiBearerAuth,
   ApiForbiddenResponse,
-  ApiHeader,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -20,13 +10,14 @@ import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
 import { UserId } from 'src/core/decorators/user-id.decorator';
 
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
+@ApiForbiddenResponse({ description: 'Forbidden' })
 @ApiTags('customer')
 @Controller('customer')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiBearerAuth()
   @Role(Roles.USER)
   @Post()
   create(@UserId() userId: string) {

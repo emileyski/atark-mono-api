@@ -10,13 +10,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const options = new DocumentBuilder()
-    .setTitle('Auth Service')
-    .setDescription('Auth Service API')
+    .setTitle('🚚 Delivery Service API')
+    .setDescription('The delivery service API description')
     .setVersion('1.0')
     .addTag('auth')
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
+      description: 'Enter access token here',
       bearerFormat: 'Bearer ${token}',
       in: 'header',
       name: 'Authorization',
@@ -32,6 +33,13 @@ async function bootstrap() {
   app.enableCors({ origin: 'http://localhost:5173' });
 
   await app.listen(PORT);
-  Logger.log(`😎 Auth service is running on port ${PORT}`, 'bootstrap');
+  Logger.log(
+    `🚚 Delivery service is running on: http://localhost:${PORT}/api`,
+    'bootstrap',
+  );
+  Logger.log(
+    `📚 Swagger documentation is running on: http://localhost:${PORT}/api/docs`,
+    'bootstrap',
+  );
 }
 bootstrap();

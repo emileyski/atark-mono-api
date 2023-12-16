@@ -14,6 +14,8 @@ export class AccessTokenStrategy extends PassportStrategy(
       secretOrKey: 'some_jwt_secret', //TODO: refactor to ENV
       ignoreExpiration: false,
     });
+
+    console.log('jwt from request', ExtractJwt.fromAuthHeaderAsBearerToken());
   }
 
   validate(payload: JwtPayload) {

@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
 import { UserId } from 'src/core/decorators/user-id.decorator';
@@ -19,26 +24,32 @@ import { CreateComplaintDto } from 'src/complaint/dto/create-complaint.dto';
 import { User } from 'src/core/decorators/user.decorator';
 import { JwtPayload } from 'src/core/interfaces/jwt-payload.interface';
 
+@ApiUnauthorizedResponse({
+  description: 'You are not authorized, please provide correct access token',
+})
+@ApiForbiddenResponse({
+  description: 'You are not allowed to perform this action',
+})
 @ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBearerAuth()
   @Role(Roles.CUSTOMER)
   @Post()
   create(@Body() createOrderDto: CreateOrderDto, @UserId() userId: string) {
     return this.ordersService.create(createOrderDto, userId);
   }
 
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBearerAuth()
   @Role(Roles.CUSTOMER)
   @Post(':orderId/cancel')
   cancelOrder(@Param('orderId') orderId: number, @UserId() userId: string) {
     return this.ordersService.cancelOrder(orderId, userId);
   }
 
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBearerAuth()
   @Role(Roles.CUSTOMER)
   @Post(':orderId/confirm-delivery')
   confirmOrderDelivery(
@@ -48,7 +59,7 @@ export class OrdersController {
     return this.ordersService.confirmOrderDelivery(orderId, userId);
   }
 
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Post(':orderId/complain')
   complainOrder(
@@ -74,6 +85,7 @@ export class OrdersController {
     return this.ordersService.estimatePrice(distance, tariffId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.CUSTOMER)
   @Post(':orderId/reject')
@@ -82,6 +94,7 @@ export class OrdersController {
   }
 
   //#region Driver actions
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.DRIVER)
   @Post(':orderId/assign')
@@ -89,6 +102,7 @@ export class OrdersController {
     return this.ordersService.assignOrder(orderId, userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.DRIVER)
   @Post(':orderId/pickup')
@@ -96,6 +110,7 @@ export class OrdersController {
     return this.ordersService.pickupOrder(orderId, userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.DRIVER)
   @Post(':orderId/deliver')
@@ -104,6 +119,7 @@ export class OrdersController {
   }
   //#endregion
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.CUSTOMER)
   @Get('as-customer')
@@ -111,6 +127,7 @@ export class OrdersController {
     return this.ordersService.findAllAsCustomer(userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.DRIVER)
   @Get('as-driver')
@@ -118,6 +135,7 @@ export class OrdersController {
     return this.ordersService.findAllAsDriver(userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.CUSTOMER)
   @Get(':orderId/as-customer')
@@ -133,6 +151,7 @@ export class OrdersController {
     );
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Role(Roles.DRIVER)
   @Get('current')

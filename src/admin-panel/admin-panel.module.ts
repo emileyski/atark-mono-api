@@ -10,6 +10,7 @@ import { Tariff } from 'src/tariff/entities/tariff.entity';
 import { Complaint } from 'src/complaint/entities/complaint.entity';
 import { Driver } from 'src/driver/entities/driver.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
+import { TariffsController } from './tariffs/tariffs.controller';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { Customer } from 'src/customer/entities/customer.entity';
     ]),
     AdminPanelModule,
   ],
-  controllers: [AdminPanelController],
+  controllers: [AdminPanelController, TariffsController],
   providers: [AdminPanelService],
 })
 export class AdminPanelModule {}

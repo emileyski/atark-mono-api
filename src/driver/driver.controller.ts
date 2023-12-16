@@ -4,7 +4,7 @@ import { CreateDriverDto } from './dto/create-driver.dto';
 import { Role } from 'src/core/decorators/role.decorator';
 import { Roles } from 'src/core/enums/roles.enum';
 import { UserId } from 'src/core/decorators/user-id.decorator';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/core/decorators/public.decorator';
 
 //контроллер для водителя
@@ -15,6 +15,7 @@ export class DriverController {
   constructor(private readonly driverService: DriverService) {}
 
   //создание водителя
+  @ApiBearerAuth()
   @Role(Roles.USER)
   @Post()
   create(@Body() createDriverDto: CreateDriverDto, @UserId() userId: string) {
